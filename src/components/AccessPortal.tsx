@@ -18,6 +18,8 @@ import {
   Eye
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { db } from "../firebase"; // Import Firebase
+import { collection, addDoc } from "firebase/firestore"; // Import Firestore functions
 
 interface AccessRequest {
   id: string;
@@ -96,7 +98,7 @@ export function AccessPortal() {
     }
   ]);
 
-  const handleSubmitRequest = () => {
+  const handleSubmitRequest = async () => { // Made async to handle Firestore promise
     if (!newRequest.resource || !newRequest.justification) {
       toast({
         title: "Missing Information",
@@ -106,22 +108,39 @@ export function AccessPortal() {
       return;
     }
 
-    // Simulate AI-powered auto-approval logic
-    const isAutoApproved = Math.random() > 0.5; // 50% auto-approval rate
-    
-    toast({
-      title: isAutoApproved ? "Request Auto-Approved!" : "Request Submitted",
-      description: isAutoApproved 
-        ? "AI Policy Engine automatically approved your request based on your role and history."
-        : "Your request is being reviewed. You'll receive an email notification with the decision.",
-      variant: isAutoApproved ? "default" : "default"
-    });
+    try {
+      // Add the new request to Firestore
+      await addDoc(collection(db, "accessRequests"), {
+        ...newRequest,
+        requester: "Current User", // Replace with actual user identification
+        status: "pending",
+        requestDate: new Date(),
+      });
 
-    setNewRequest({
-      resource: "",
-      justification: "",
-      priority: "medium"
-    });
+      // Simulate AI-powered auto-approval logic (can keep or remove)
+      const isAutoApproved = Math.random() > 0.5; // 50% auto-approval rate
+      
+      toast({
+        title: isAutoApproved ? "Request Auto-Approved!" : "Request Submitted",
+        description: isAutoApproved 
+          ? "AI Policy Engine automatically approved your request based on your role and history."
+          : "Your request has been submitted and is being reviewed.", // Modified description
+        variant: isAutoApproved ? "default" : "default"
+      });
+
+      setNewRequest({
+        resource: "",
+        justification: "",
+        priority: "medium"
+      });
+    } catch (e) {
+      console.error("Error adding document: ", e);
+      toast({
+        title: "Submission Error",
+        description: "There was an error submitting your request. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const getStatusIcon = (status: string) => {

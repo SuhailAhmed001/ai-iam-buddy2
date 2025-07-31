@@ -68,40 +68,6 @@ export function ChatbotInterface() {
     }
   }, [messages]);
 
-  const simulateAIResponse = async (userMessage: string): Promise<Message> => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-
-    // Simple response generation based on keywords
-    let response = "";
-    let messageType: "success" | "warning" | "info" = "info";
-
-    if (userMessage.toLowerCase().includes("password") || userMessage.toLowerCase().includes("reset")) {
-      response = "I can help you reset your password. For security reasons, I'll need to verify your identity first. I'm sending a verification code to your registered email address. Please check your email and provide the code to proceed with the password reset.";
-      messageType = "info";
-    } else if (userMessage.toLowerCase().includes("vpn") || userMessage.toLowerCase().includes("access")) {
-      response = "To request VPN access, you'll need to submit a formal access request. Based on your role as a Software Engineer, you're eligible for VPN access. I'm automatically generating an access request for you. Expected approval time: 15 minutes. You'll receive an email notification once approved.";
-      messageType = "success";
-    } else if (userMessage.toLowerCase().includes("permission") || userMessage.toLowerCase().includes("rights")) {
-      response = "Here are your current access permissions:\n\n✅ Email & Calendar\n✅ Development Environment\n✅ Code Repository (Read/Write)\n✅ Staging Environment\n❌ Production Environment (Requires approval)\n❌ Admin Panel\n\nIf you need additional permissions, I can help you submit a request.";
-      messageType = "info";
-    } else if (userMessage.toLowerCase().includes("denied") || userMessage.toLowerCase().includes("why")) {
-      response = "I've analyzed your recent access request. It was denied because:\n\n1. The requested resource requires manager approval\n2. Your current role doesn't include production access\n3. You haven't completed the required security training\n\nI recommend completing the security training first, then resubmitting your request with manager approval.";
-      messageType = "warning";
-    } else {
-      response = "I understand your request. Let me analyze this using our AI policy engine... Based on your current permissions and role, I can help you with this request. Would you like me to check your eligibility or submit a formal request on your behalf?";
-      messageType = "info";
-    }
-
-    return {
-      id: Date.now().toString(),
-      role: "assistant",
-      content: response,
-      timestamp: new Date(),
-      type: messageType
-    };
-  };
-
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
 
@@ -117,13 +83,36 @@ export function ChatbotInterface() {
     setIsLoading(true);
 
     try {
-      const aiResponse = await simulateAIResponse(inputValue);
+      // Call your backend endpoint here
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: userMessage.content }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      const aiResponse: Message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: data.reply, // Assuming your backend returns { reply: "AI response" }
+        timestamp: new Date(),
+        // You might want to add a 'type' field to the backend response for different message styles
+      };
+
       setMessages(prev => [...prev, aiResponse]);
     } catch (error) {
+      console.error("Error sending message to backend: ", error);
       const errorMessage: Message = {
         id: Date.now().toString(),
         role: "assistant",
-        content: "I apologize, but I'm experiencing some technical difficulties. Please try again in a moment or contact your system administrator.",
+        content: "I apologize, but I'm experiencing some technical difficulties communicating with the AI. Please try again in a moment.",
         timestamp: new Date(),
         type: "warning"
       };
