@@ -112,6 +112,8 @@ export function AccessPortal() {
       // Add the new request to Firestore
       await addDoc(collection(db, "accessRequests"), {
         ...newRequest,
+        employeeId: "EMP001", // You may want to make this dynamic
+        requestedPermissions: newRequest.justification, // Using justification as requested permissions
         requester: "Current User", // Replace with actual user identification
         status: "pending",
         requestDate: new Date(),
@@ -186,8 +188,8 @@ export function AccessPortal() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Self-Service Access Portal</h2>
-          <p className="text-muted-foreground">Request access, view permissions, and track request status</p>
+          <h2 className="text-2xl font-bold">Admin Portal</h2>
+          <p className="text-muted-foreground">Manage access requests, view permissions, and track request status</p>
         </div>
       </div>
 

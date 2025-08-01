@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 // import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Removed Tabs components
 import { ChatbotInterface } from "./ChatbotInterface";
 import { AccessPortal } from "./AccessPortal";
+import { AccessCheckPortal } from "./AccessCheckPortal";
 import { PolicyEngine } from "./PolicyEngine";
 import { AuditDashboard } from "./AuditDashboard";
 import { ContextualAuth } from "./ContextualAuth";
@@ -91,7 +92,7 @@ export function Dashboard() {
                   onClick={() => setActiveModule("portal")}
                 >
                   <Users className="mr-2 h-4 w-4" />
-                  Review Access Requests
+                  Review Admin Requests
                 </Button>
                 <Button 
                   variant="outline" 
@@ -116,6 +117,8 @@ export function Dashboard() {
         return <ChatbotInterface />;
       case "portal":
         return <AccessPortal />;
+      case "access-check":
+        return <AccessCheckPortal />;
       case "policies":
         return <PolicyEngine />;
       case "auth":
@@ -162,6 +165,14 @@ export function Dashboard() {
             variant={activeModule === "portal" ? "secondary" : "ghost"}
             className="w-full justify-start gap-2"
             onClick={() => setActiveModule("portal")}
+          >
+            <Users className="h-4 w-4" />
+            Admin Portal
+          </Button>
+          <Button 
+            variant={activeModule === "access-check" ? "secondary" : "ghost"}
+            className="w-full justify-start gap-2"
+            onClick={() => setActiveModule("access-check")}
           >
             <Users className="h-4 w-4" />
             Access Portal
